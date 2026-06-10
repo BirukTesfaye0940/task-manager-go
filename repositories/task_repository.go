@@ -11,6 +11,8 @@ type TaskRepository interface {
 	GetAll() []models.Task
 	GetByID(id int) (models.Task, error)
 	Create(task models.Task) models.Task
+	Update(id int, task models.Task) (models.Task, error)
+	Delete(id int) error
 }
 
 type InMemoryTaskRepo struct {
@@ -29,7 +31,7 @@ func (r *InMemoryTaskRepo) GetAll() []models.Task {
 	return r.tasks
 }
 
-func (r *InMemoryTaskRepo) GetbyID(id int) (models.Task, error) {
+func (r *InMemoryTaskRepo) GetByID(id int) (models.Task, error) {
 	for _, task := range r.tasks {
 		if task.ID == id {
 			return task, nil
@@ -47,4 +49,39 @@ func (r *InMemoryTaskRepo) Create(task models.Task) models.Task {
 	r.tasks = append(r.tasks, task)
 
 	return task
+}
+
+func (r *InMemoryTaskRepo) Update(id int, task models.Task) (models.Task, error) {
+
+	for i, existingTask := range r.tasks {
+
+		if existingTask.ID == id {
+
+			task.ID = id
+
+			r.tasks[i] = task
+
+			return task, nil
+		}
+	}
+
+	return models.Task{}, ErrTaskNotFound
+}
+
+func (r *InMemoryTaskRepo) Delete(id int) error {
+
+	for i, task := range r.tasks {
+
+		if task.ID == id {
+
+			r.tasks = append(
+				r.tasks[:i],
+				r.tasks[i+1:]...,
+			)
+
+			return nil
+		}
+	}
+
+	return ErrTaskNotFound
 }

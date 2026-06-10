@@ -29,3 +29,11 @@ func (s *TaskService) GetTask(id int) (models.Task, error) {
 func (s *TaskService) CreateTask(task models.Task) models.Task {
 	return s.repo.Create(task)
 }
+
+func (s *TaskService) UpdateTask(id int, task models.Task) (models.Task, error) {
+	return s.repo.Update(id, task)
+}
+
+func (s *TaskService) DeleteTask(id int) error {
+	return s.repo.Delete(id)
+}
