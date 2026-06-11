@@ -92,18 +92,22 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 			err,
 			repositories.ErrTaskNotFound,
 		) {
-			http.Error(
+			response.JSON(
 				w,
-				"task not found",
 				http.StatusNotFound,
+				response.ErrorResponse{
+					Error: "task not found",
+				},
 			)
 			return
 		}
 
-		http.Error(
+		response.JSON(
 			w,
-			"internal server error",
 			http.StatusInternalServerError,
+			response.ErrorResponse{
+				Error: "internal server error",
+			},
 		)
 	}
 
