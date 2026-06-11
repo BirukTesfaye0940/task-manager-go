@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"task-manager-go/internal/response"
 	"task-manager-go/models"
 	"task-manager-go/repositories"
 	"task-manager-go/services"
@@ -62,14 +63,11 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	createdTask := h.service.CreateTask(task)
 
-	w.Header().Set(
-		"Content-Type",
-		"application/json",
+	response.JSON(
+		w,
+		http.StatusCreated,
+		createdTask,
 	)
-
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode(createdTask)
 }
 
 func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
