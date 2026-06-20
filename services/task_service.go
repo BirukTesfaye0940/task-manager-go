@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"task-manager-go/models"
 	"task-manager-go/repositories"
 )
@@ -8,6 +9,8 @@ import (
 type TaskService struct {
 	repo repositories.TaskRepository
 }
+
+var ErrTitleRequired = errors.New("title is required")
 
 func NewTaskService(
 	repo repositories.TaskRepository,
@@ -26,8 +29,11 @@ func (s *TaskService) GetTask(id int) (models.Task, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *TaskService) CreateTask(task models.Task) models.Task {
-	return s.repo.Create(task)
+func (s *TaskService) CreateTask(task models.Task) (models.Task, error) {
+	if task.Title == "" {
+		return models.Task{}, ErrTitleRequired
+	}
+	return s.repo.Create(task), nil
 }
 
 func (s *TaskService) UpdateTask(id int, task models.Task) (models.Task, error) {

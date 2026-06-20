@@ -61,7 +61,18 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		Done:        false,
 	}
 
-	createdTask := h.service.CreateTask(task)
+	createdTask, err := h.service.CreateTask(task)
+
+	if err != nil {
+		response.JSON(
+			w,
+			http.StatusBadRequest,
+			response.ErrorResponse{
+				Error: err.Error(),
+			},
+		)
+		return
+	}
 
 	response.JSON(
 		w,
