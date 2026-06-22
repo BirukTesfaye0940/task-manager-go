@@ -33,7 +33,7 @@ func (s *TaskService) CreateTask(task models.Task) (models.Task, error) {
 	if task.Title == "" {
 		return models.Task{}, ErrTitleRequired
 	}
-	return s.repo.Create(task), nil
+	return s.repo.Create(task)
 }
 
 func (s *TaskService) UpdateTask(id int, task models.Task) (models.Task, error) {

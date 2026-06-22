@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"task-manager-go/handlers"
+	"task-manager-go/middleware"
 	"task-manager-go/repositories"
 	"task-manager-go/services"
 )
@@ -21,7 +22,7 @@ func main() {
 	mux.HandleFunc("DELETE /tasks/{id}", handler.DeleteTask)
 
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":8080", middleware.Logging(mux)); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
