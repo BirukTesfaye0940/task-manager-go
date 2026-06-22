@@ -21,7 +21,7 @@ func NewTaskService(
 	}
 }
 
-func (s *TaskService) GetAllTasks() []models.Task {
+func (s *TaskService) GetAllTasks() ([]models.Task, error) {
 	return s.repo.GetAll()
 }
 

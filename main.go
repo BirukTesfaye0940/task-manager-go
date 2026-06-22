@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"task-manager-go/database"
 	"task-manager-go/handlers"
 	"task-manager-go/middleware"
 	"task-manager-go/repositories"
@@ -10,7 +11,13 @@ import (
 )
 
 func main() {
-	repo := repositories.NewInMemoryTaskRepo()
+	db, err := database.Connect()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	repo := repositories.NewPostgresTaskRepo(db)
 	service := services.NewTaskService(repo)
 	handler := handlers.NewTaskHandler(service)
 

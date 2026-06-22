@@ -31,7 +31,16 @@ func NewTaskHandler(service *services.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
-	task := h.service.GetAllTasks()
+	task, err := h.service.GetAllTasks()
+
+	if err != nil {
+		http.Error(
+			w,
+			"internal server error",
+			http.StatusInternalServerError,
+		)
+		return
+	}
 
 	w.Header().Set(
 		"Content-Type",
