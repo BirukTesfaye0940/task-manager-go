@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"task-manager-go/models"
 	"task-manager-go/repositories"
@@ -21,12 +22,12 @@ func NewTaskService(
 	}
 }
 
-func (s *TaskService) GetAllTasks() ([]models.Task, error) {
-	return s.repo.GetAll()
+func (s *TaskService) GetAllTasks(ctx context.Context) ([]models.Task, error) {
+	return s.repo.GetAll(ctx)
 }
 
-func (s *TaskService) GetTask(id int) (models.Task, error) {
-	return s.repo.GetByID(id)
+func (s *TaskService) GetTask(ctx context.Context, id int) (models.Task, error) {
+	return s.repo.GetByID(ctx, id)
 }
 
 func (s *TaskService) CreateTask(task models.Task) (models.Task, error) {

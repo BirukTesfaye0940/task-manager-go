@@ -31,7 +31,9 @@ func NewTaskHandler(service *services.TaskService) *TaskHandler {
 }
 
 func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
-	task, err := h.service.GetAllTasks()
+	ctx := r.Context()
+
+	task, err := h.service.GetAllTasks(ctx)
 
 	if err != nil {
 		http.Error(
@@ -91,6 +93,8 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -104,7 +108,7 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := h.service.GetTask(id)
+	task, err := h.service.GetTask(ctx, id)
 
 	if err != nil {
 

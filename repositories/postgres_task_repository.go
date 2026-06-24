@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
 	"task-manager-go/models"
 )
@@ -13,8 +14,8 @@ func NewPostgresTaskRepo(db *sql.DB) *PostgresTaskRepo {
 	return &PostgresTaskRepo{db: db}
 }
 
-func (r *PostgresTaskRepo) GetAll() ([]models.Task, error) {
-	rows, err := r.db.Query("SELECT id, title, description, done FROM tasks")
+func (r *PostgresTaskRepo) GetAll(ctx context.Context) ([]models.Task, error) {
+	rows, err := r.db.Query(ctx, "SELECT id, title, description, done FROM tasks")
 	if err != nil {
 		return nil, err
 	}
@@ -31,9 +32,9 @@ func (r *PostgresTaskRepo) GetAll() ([]models.Task, error) {
 	return tasks, nil
 }
 
-func (r *PostgresTaskRepo) GetByID(id int) (models.Task, error) {
+func (r *PostgresTaskRepo) GetByID(ctx context.Context, id int) (models.Task, error) {
 	var task models.Task
-	err := r.db.QueryRow("SELECT id, title, description, done FROM tasks WHERE id = $1", id).
+	err := r.db.QueryRow(ctx, "SELECT id, title, description, done FROM tasks WHERE id = $1", id).
 		Scan(&task.ID, &task.Title, &task.Description, &task.Done)
 	if err != nil {
 		if err == sql.ErrNoRows {

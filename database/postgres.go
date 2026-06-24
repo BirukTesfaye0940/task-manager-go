@@ -5,10 +5,18 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
+	"golang.org/x/tools/go/cfg"
 )
 
 func Connect() (*sql.DB, error) {
-	connStr := "host=localhost port=5432 user=postgres password=123abc. dbname=task_manager sslmodel=disable"
+	connStr := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+	)
 
 	db, err := sql.Open("postgres", connStr)
 
