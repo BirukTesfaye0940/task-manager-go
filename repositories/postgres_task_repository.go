@@ -15,7 +15,7 @@ func NewPostgresTaskRepo(db *sql.DB) *PostgresTaskRepo {
 }
 
 func (r *PostgresTaskRepo) GetAll(ctx context.Context) ([]models.Task, error) {
-	rows, err := r.db.Query(ctx, "SELECT id, title, description, done FROM tasks")
+	rows, err := r.db.QueryContext(ctx, "SELECT id, title, description, done FROM tasks")
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (r *PostgresTaskRepo) GetAll(ctx context.Context) ([]models.Task, error) {
 
 func (r *PostgresTaskRepo) GetByID(ctx context.Context, id int) (models.Task, error) {
 	var task models.Task
-	err := r.db.QueryRow(ctx, "SELECT id, title, description, done FROM tasks WHERE id = $1", id).
+	err := r.db.QueryRowContext(ctx, "SELECT id, title, description, done FROM tasks WHERE id = $1", id).
 		Scan(&task.ID, &task.Title, &task.Description, &task.Done)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -45,8 +45,9 @@ func (r *PostgresTaskRepo) GetByID(ctx context.Context, id int) (models.Task, er
 	return task, nil
 }
 
-func (r *PostgresTaskRepo) Create(task models.Task) (models.Task, error) {
-	err := r.db.QueryRow(
+func (r *PostgresTaskRepo) Create(ctx context.Context, task models.Task) (models.Task, error) {
+	err := r.db.QueryRowContext(
+		ctx,
 		"INSERT INTO tasks (title, description, done) VALUES ($1, $2, $3) RETURNING id",
 		task.Title, task.Description, task.Done,
 	).Scan(&task.ID)
@@ -56,8 +57,9 @@ func (r *PostgresTaskRepo) Create(task models.Task) (models.Task, error) {
 	return task, nil
 }
 
-func (r *PostgresTaskRepo) Update(id int, task models.Task) (models.Task, error) {
-	res, err := r.db.Exec(
+func (r *PostgresTaskRepo) Update(ctx context.Context, id int, task models.Task) (models.Task, error) {
+	res, err := r.db.ExecContext(
+		ctx,
 		"UPDATE tasks SET title = $1, description = $2, done = $3 WHERE id = $4",
 		task.Title, task.Description, task.Done, id,
 	)
@@ -78,8 +80,8 @@ func (r *PostgresTaskRepo) Update(id int, task models.Task) (models.Task, error)
 	return task, nil
 }
 
-func (r *PostgresTaskRepo) Delete(id int) error {
-	res, err := r.db.Exec("DELETE FROM tasks WHERE id = $1", id)
+func (r *PostgresTaskRepo) Delete(ctx context.Context, id int) error {
+	res, err := r.db.ExecContext(ctx, "DELETE FROM tasks WHERE id = $1", id)
 	if err != nil {
 		return err
 	}

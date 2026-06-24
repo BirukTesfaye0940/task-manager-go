@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"task-manager-go/models"
 )
 
@@ -16,11 +17,11 @@ func NewInMemoryTaskRepo() *InMemoryTaskRepo {
 	}
 }
 
-func (r *InMemoryTaskRepo) GetAll() []models.Task {
-	return r.tasks
+func (r *InMemoryTaskRepo) GetAll(ctx context.Context) ([]models.Task, error) {
+	return r.tasks, nil
 }
 
-func (r *InMemoryTaskRepo) GetByID(id int) (models.Task, error) {
+func (r *InMemoryTaskRepo) GetByID(ctx context.Context, id int) (models.Task, error) {
 	for _, task := range r.tasks {
 		if task.ID == id {
 			return task, nil
@@ -30,7 +31,7 @@ func (r *InMemoryTaskRepo) GetByID(id int) (models.Task, error) {
 	return models.Task{}, ErrTaskNotFound
 }
 
-func (r *InMemoryTaskRepo) Create(task models.Task) (models.Task, error) {
+func (r *InMemoryTaskRepo) Create(ctx context.Context, task models.Task) (models.Task, error) {
 
 	task.ID = r.nextID
 	r.nextID++
@@ -40,7 +41,7 @@ func (r *InMemoryTaskRepo) Create(task models.Task) (models.Task, error) {
 	return task, nil
 }
 
-func (r *InMemoryTaskRepo) Update(id int, task models.Task) (models.Task, error) {
+func (r *InMemoryTaskRepo) Update(ctx context.Context, id int, task models.Task) (models.Task, error) {
 
 	for i, existingTask := range r.tasks {
 
@@ -57,7 +58,7 @@ func (r *InMemoryTaskRepo) Update(id int, task models.Task) (models.Task, error)
 	return models.Task{}, ErrTaskNotFound
 }
 
-func (r *InMemoryTaskRepo) Delete(id int) error {
+func (r *InMemoryTaskRepo) Delete(ctx context.Context, id int) error {
 
 	for i, task := range r.tasks {
 

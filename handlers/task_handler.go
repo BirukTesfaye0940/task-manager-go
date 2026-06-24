@@ -72,7 +72,8 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		Done:        false,
 	}
 
-	createdTask, err := h.service.CreateTask(task)
+	ctx := r.Context()
+	createdTask, err := h.service.CreateTask(ctx, task)
 
 	if err != nil {
 		response.JSON(
@@ -180,7 +181,9 @@ func (h *TaskHandler) UpdateTask(
 		Done:        req.Done,
 	}
 
+	ctx := r.Context()
 	updatedTask, err := h.service.UpdateTask(
+		ctx,
 		id,
 		task,
 	)
@@ -222,7 +225,8 @@ func (h *TaskHandler) DeleteTask(
 		return
 	}
 
-	err = h.service.DeleteTask(id)
+	ctx := r.Context()
+	err = h.service.DeleteTask(ctx, id)
 
 	if err != nil {
 

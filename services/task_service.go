@@ -30,17 +30,17 @@ func (s *TaskService) GetTask(ctx context.Context, id int) (models.Task, error) 
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *TaskService) CreateTask(task models.Task) (models.Task, error) {
+func (s *TaskService) CreateTask(ctx context.Context, task models.Task) (models.Task, error) {
 	if task.Title == "" {
 		return models.Task{}, ErrTitleRequired
 	}
-	return s.repo.Create(task)
+	return s.repo.Create(ctx, task)
 }
 
-func (s *TaskService) UpdateTask(id int, task models.Task) (models.Task, error) {
-	return s.repo.Update(id, task)
+func (s *TaskService) UpdateTask(ctx context.Context, id int, task models.Task) (models.Task, error) {
+	return s.repo.Update(ctx, id, task)
 }
 
-func (s *TaskService) DeleteTask(id int) error {
-	return s.repo.Delete(id)
+func (s *TaskService) DeleteTask(ctx context.Context, id int) error {
+	return s.repo.Delete(ctx, id)
 }

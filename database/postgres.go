@@ -5,10 +5,15 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
-	"golang.org/x/tools/go/cfg"
+	"task-manager-go/config"
 )
 
 func Connect() (*sql.DB, error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %v", err)
+	}
+
 	connStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DBHost,
