@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"task-manager-go/config"
 	"task-manager-go/database"
 	"task-manager-go/handlers"
 	"task-manager-go/middleware"
@@ -11,7 +12,12 @@ import (
 )
 
 func main() {
-	db, err := database.Connect()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	db, err := database.Connect(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

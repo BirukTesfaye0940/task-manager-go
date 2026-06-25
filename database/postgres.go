@@ -8,11 +8,7 @@ import (
 	"task-manager-go/config"
 )
 
-func Connect() (*sql.DB, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %v", err)
-	}
+func Connect(cfg *config.Config) (*sql.DB, error) {
 
 	connStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
