@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"task-manager-go/config"
 	"task-manager-go/database"
 	"task-manager-go/handlers"
 	"task-manager-go/middleware"
 	"task-manager-go/repositories"
 	"task-manager-go/services"
+	"time"
 )
 
 func main() {
@@ -17,7 +22,10 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	db, err := database.Connect(cfg)
+	// Create a bootstrap context with timeout for connecting to the database
+	initCtx, initCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	db, err := database.Connect(initCtx, cfg)
+	initCancel()
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -34,8 +42,34 @@ func main() {
 	mux.HandleFunc("PUT /tasks/{id}", handler.UpdateTask)
 	mux.HandleFunc("DELETE /tasks/{id}", handler.DeleteTask)
 
-	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", middleware.Logging(mux)); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: middleware.RequestID(middleware.Logging(mux)),
 	}
+
+	// Create a channel to listen for interrupt signals
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	// Run the server in a goroutine
+	go func() {
+		log.Println("Starting server on :8080")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
+
+	// Wait for an interrupt signal
+	<-stop
+	log.Println("\nShutting down server...")
+
+	// Create a context with timeout for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server gracefully stopped")
 }

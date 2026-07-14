@@ -23,14 +23,23 @@ func NewTaskService(
 }
 
 func (s *TaskService) GetAllTasks(ctx context.Context) ([]models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	return s.repo.GetAll(ctx)
 }
 
 func (s *TaskService) GetTask(ctx context.Context, id int) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 	return s.repo.GetByID(ctx, id)
 }
 
 func (s *TaskService) CreateTask(ctx context.Context, task models.Task) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 	if task.Title == "" {
 		return models.Task{}, ErrTitleRequired
 	}
@@ -38,9 +47,15 @@ func (s *TaskService) CreateTask(ctx context.Context, task models.Task) (models.
 }
 
 func (s *TaskService) UpdateTask(ctx context.Context, id int, task models.Task) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 	return s.repo.Update(ctx, id, task)
 }
 
 func (s *TaskService) DeleteTask(ctx context.Context, id int) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	return s.repo.Delete(ctx, id)
 }

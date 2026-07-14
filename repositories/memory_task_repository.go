@@ -18,10 +18,16 @@ func NewInMemoryTaskRepo() *InMemoryTaskRepo {
 }
 
 func (r *InMemoryTaskRepo) GetAll(ctx context.Context) ([]models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	return r.tasks, nil
 }
 
 func (r *InMemoryTaskRepo) GetByID(ctx context.Context, id int) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 	for _, task := range r.tasks {
 		if task.ID == id {
 			return task, nil
@@ -32,6 +38,9 @@ func (r *InMemoryTaskRepo) GetByID(ctx context.Context, id int) (models.Task, er
 }
 
 func (r *InMemoryTaskRepo) Create(ctx context.Context, task models.Task) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 
 	task.ID = r.nextID
 	r.nextID++
@@ -42,6 +51,9 @@ func (r *InMemoryTaskRepo) Create(ctx context.Context, task models.Task) (models
 }
 
 func (r *InMemoryTaskRepo) Update(ctx context.Context, id int, task models.Task) (models.Task, error) {
+	if err := ctx.Err(); err != nil {
+		return models.Task{}, err
+	}
 
 	for i, existingTask := range r.tasks {
 
@@ -59,6 +71,9 @@ func (r *InMemoryTaskRepo) Update(ctx context.Context, id int, task models.Task)
 }
 
 func (r *InMemoryTaskRepo) Delete(ctx context.Context, id int) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 
 	for i, task := range r.tasks {
 

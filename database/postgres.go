@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -8,7 +9,7 @@ import (
 	"task-manager-go/config"
 )
 
-func Connect(cfg *config.Config) (*sql.DB, error) {
+func Connect(ctx context.Context, cfg *config.Config) (*sql.DB, error) {
 
 	connStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -25,7 +26,7 @@ func Connect(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = db.Ping()
+	err = db.PingContext(ctx)
 
 	if err != nil {
 		return nil, err
