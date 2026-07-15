@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"task-manager-go/internal/ctxkey"
 	"task-manager-go/internal/response"
 	"task-manager-go/models"
 	"task-manager-go/repositories"
@@ -30,10 +31,20 @@ func NewTaskHandler(service *services.TaskService) *TaskHandler {
 	return &TaskHandler{service: service}
 }
 
+func (h *TaskHandler) getUserID(r *http.Request) (int, bool) {
+	userID, ok := r.Context().Value(ctxkey.UserIDKey).(int)
+	return userID, ok
+}
+
 func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	userID, ok := h.getUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-	task, err := h.service.GetAllTasks(ctx)
+	task, err := h.service.GetAllTasks(ctx, userID)
 
 	if err != nil {
 		http.Error(
@@ -53,6 +64,12 @@ func (h *TaskHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
+	userID, ok := h.getUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var req CreateTaskRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -67,6 +84,7 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	task := models.Task{
+		UserID:      userID,
 		Title:       req.Title,
 		Description: req.Description,
 		Done:        false,
@@ -95,6 +113,11 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	userID, ok := h.getUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	idStr := r.PathValue("id")
 
@@ -109,7 +132,7 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := h.service.GetTask(ctx, id)
+	task, err := h.service.GetTask(ctx, id, userID)
 
 	if err != nil {
 
@@ -134,6 +157,7 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 				Error: "internal server error",
 			},
 		)
+		return
 	}
 
 	w.Header().Set(
@@ -148,6 +172,11 @@ func (h *TaskHandler) UpdateTask(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	userID, ok := h.getUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	idStr := r.PathValue("id")
 
@@ -176,6 +205,7 @@ func (h *TaskHandler) UpdateTask(
 	}
 
 	task := models.Task{
+		UserID:      userID,
 		Title:       req.Title,
 		Description: req.Description,
 		Done:        req.Done,
@@ -211,6 +241,11 @@ func (h *TaskHandler) DeleteTask(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	userID, ok := h.getUserID(r)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	idStr := r.PathValue("id")
 
@@ -226,7 +261,7 @@ func (h *TaskHandler) DeleteTask(
 	}
 
 	ctx := r.Context()
-	err = h.service.DeleteTask(ctx, id)
+	err = h.service.DeleteTask(ctx, id, userID)
 
 	if err != nil {
 
