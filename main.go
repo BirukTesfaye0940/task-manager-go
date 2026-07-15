@@ -35,12 +35,24 @@ func main() {
 	service := services.NewTaskService(repo)
 	handler := handlers.NewTaskHandler(service)
 
+	userRepo := repositories.NewPostgresUserRepo(db)
+	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
+	authHandler := handlers.NewAuthHandler(authService)
+
+	authMiddleware := middleware.Auth(cfg.JWTSecret)
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /tasks", handler.GetTasks)
-	mux.HandleFunc("POST /tasks", handler.CreateTask)
-	mux.HandleFunc("GET /tasks/{id}", handler.GetTask)
-	mux.HandleFunc("PUT /tasks/{id}", handler.UpdateTask)
-	mux.HandleFunc("DELETE /tasks/{id}", handler.DeleteTask)
+
+	// Public routes
+	mux.HandleFunc("POST /register", authHandler.Register)
+	mux.HandleFunc("POST /login", authHandler.Login)
+
+	// Protected task routes — wrapped individually with the auth middleware
+	mux.Handle("GET /tasks", authMiddleware(http.HandlerFunc(handler.GetTasks)))
+	mux.Handle("POST /tasks", authMiddleware(http.HandlerFunc(handler.CreateTask)))
+	mux.Handle("GET /tasks/{id}", authMiddleware(http.HandlerFunc(handler.GetTask)))
+	mux.Handle("PUT /tasks/{id}", authMiddleware(http.HandlerFunc(handler.UpdateTask)))
+	mux.Handle("DELETE /tasks/{id}", authMiddleware(http.HandlerFunc(handler.DeleteTask)))
 
 	server := &http.Server{
 		Addr:    ":8080",

@@ -32,6 +32,32 @@ func Connect(ctx context.Context, cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	fmt.Println("Connected to PostgreSQL")
+	if err := initSchema(ctx, db); err != nil {
+		return nil, fmt.Errorf("failed to initialize schema: %w", err)
+	}
+
+	fmt.Println("Connected to PostgreSQL and schema initialized")
 	return db, nil
+}
+
+func initSchema(ctx context.Context, db *sql.DB) error {
+	schema := `
+	CREATE TABLE IF NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		username VARCHAR(255) UNIQUE NOT NULL,
+		password_hash VARCHAR(255) NOT NULL,
+		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS tasks (
+		id SERIAL PRIMARY KEY,
+		title VARCHAR(255) NOT NULL,
+		description TEXT,
+		done BOOLEAN DEFAULT FALSE
+	);
+
+	ALTER TABLE tasks ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id) ON DELETE CASCADE;
+	`
+	_, err := db.ExecContext(ctx, schema)
+	return err
 }

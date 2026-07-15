@@ -14,6 +14,7 @@ type Config struct {
 	DBName     string
 
 	ServerPort string
+	JWTSecret  string
 }
 
 func Load() (*Config, error) {
@@ -22,6 +23,11 @@ func Load() (*Config, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "default-jwt-secret-key-change-in-prod"
 	}
 
 	return &Config{
@@ -33,5 +39,6 @@ func Load() (*Config, error) {
 		DBName:     os.Getenv("DB_NAME"),
 
 		ServerPort: os.Getenv("SERVER_PORT"),
+		JWTSecret:  jwtSecret,
 	}, nil
 }
