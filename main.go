@@ -41,9 +41,12 @@ func main() {
 
 	authMiddleware := middleware.Auth(cfg.JWTSecret)
 
+	healthHandler := handlers.NewHealthHandler(db)
+
 	mux := http.NewServeMux()
 
 	// Public routes
+	mux.HandleFunc("GET /health", healthHandler.Health)
 	mux.HandleFunc("POST /register", authHandler.Register)
 	mux.HandleFunc("POST /login", authHandler.Login)
 
@@ -55,7 +58,7 @@ func main() {
 	mux.Handle("DELETE /tasks/{id}", authMiddleware(http.HandlerFunc(handler.DeleteTask)))
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + cfg.ServerPort,
 		Handler: middleware.RequestID(middleware.Logging(mux)),
 	}
 
@@ -65,7 +68,7 @@ func main() {
 
 	// Run the server in a goroutine
 	go func() {
-		log.Println("Starting server on :8080")
+		log.Printf("Starting server on :%s\n", cfg.ServerPort)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server failed to start: %v", err)
 		}
